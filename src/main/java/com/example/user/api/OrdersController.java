@@ -1,7 +1,6 @@
 package com.example.user.api;
 
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,10 +22,10 @@ public class OrdersController {
 
     @GetMapping
     public ResponseEntity<Map<String, String>> create(
-            @RequestParam UUID userId,
-            @RequestParam UUID productId
+            @RequestParam int userId,
+            @RequestParam int productId
     ) {
-        UUID requestId = userOrderService.createOrder(userId, productId);
-        return ResponseEntity.ok(Map.of("requestId", requestId.toString()));
+        int requestId = userOrderService.createOrder(userId, productId);
+        return ResponseEntity.ok(Map.of("requestId", Integer.toString(requestId)));
     }
 }

@@ -1,7 +1,5 @@
 package com.example.user.service;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Service;
 
 import com.example.user.kafka.OrdersRequestProducer;
@@ -15,7 +13,7 @@ public class UserOrderService {
         this.ordersRequestProducer = ordersRequestProducer;
     }
 
-    public UUID createOrder(UUID userId, UUID productId) {
+    public int createOrder(int userId, int productId) {
         return ordersRequestProducer.send(userId, productId);
     }
 }

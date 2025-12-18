@@ -1,6 +1,6 @@
 package com.example.user.kafka;
 
-import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,8 +20,8 @@ public class OrdersRequestProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public UUID send(UUID userId, UUID productId) {
-        UUID requestId = UUID.randomUUID();
+    public int send(int userId, int productId) {
+        int requestId = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
 
         OrderRequest request = new OrderRequest(
                 requestId,
@@ -31,7 +31,7 @@ public class OrdersRequestProducer {
 
         kafkaTemplate.send(
                 TOPIC,
-                userId.toString(),
+                String.valueOf(requestId),
                 request
         );
 
