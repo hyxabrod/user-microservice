@@ -8,6 +8,10 @@ import com.example.contracts.orders.OrderReply;
 @Component
 public class OrdersReplyListener {
 
+    public OrdersReplyListener() {
+        System.out.println("OrdersReplyListener created");
+    }
+
     @KafkaListener(
             topics = "orders.reply",
             containerFactory = "orderReplyListenerContainerFactory"
