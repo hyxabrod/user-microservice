@@ -13,8 +13,8 @@ spec:
         app: user-service
     spec:
       containers:
-        - name: product-service
-          image: product-service:1.0
+        - name: user-service
+          image: user-service:1.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -26,6 +26,8 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "k8s"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: my-cluster-kafka-bootstrap.kafka.svc:9092
           ports:
             - containerPort: 8080
 ---
