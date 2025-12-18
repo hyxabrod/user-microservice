@@ -7,7 +7,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -27,15 +27,13 @@ import com.example.contracts.orders.OrderRequest;
 @Configuration
 public class KafkaConfig {
 
-    private final KafkaProperties kafkaProperties;
-
-    public KafkaConfig(KafkaProperties kafkaProperties) {
-        this.kafkaProperties = kafkaProperties;
-    }
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, OrderRequest> orderRequestProducerFactory() {
-        Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
+    ProducerFactory<String, OrderRequest> orderRequestProducerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         props.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
@@ -43,23 +41,31 @@ public class KafkaConfig {
     }
 
     @Bean(name = "orderRequestKafkaTemplate")
-    public KafkaTemplate<String, OrderRequest> orderRequestKafkaTemplate() {
+    KafkaTemplate<String, OrderRequest> orderRequestKafkaTemplate() {
         return new KafkaTemplate<>(orderRequestProducerFactory());
     }
 
     @Bean
     ConsumerFactory<String, OrderReply> orderReplyConsumerFactory() {
-        Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-service");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.example.contracts");
-        JsonDeserializer<OrderReply> valueDeserializer = new JsonDeserializer<>(OrderReply.class);
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), valueDeserializer);
+
+        JsonDeserializer<OrderReply> valueDeserializer
+                = new JsonDeserializer<>(OrderReply.class, false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new StringDeserializer(),
+                valueDeserializer
+        );
     }
 
     @Bean(name = "orderReplyListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, OrderReply> orderReplyListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<String, OrderReply>
+            orderReplyListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, OrderReply> factory
                 = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(orderReplyConsumerFactory());
