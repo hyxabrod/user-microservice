@@ -31,20 +31,25 @@ public class ProductsController {
             return ResponseEntity.internalServerError().build();
         }
 
-        ReadOnlyKeyValueStore<Integer, ProductEvent> store = streams.store(
-                StoreQueryParameters.fromNameAndType(
-                        "products-store",
-                        QueryableStoreTypes.keyValueStore()
-                )
-        );
+        try {
+            ReadOnlyKeyValueStore<Integer, ProductEvent> store = streams.store(
+                    StoreQueryParameters.fromNameAndType(
+                            "products-store",
+                            QueryableStoreTypes.keyValueStore()));
 
-        List<ProductEvent> result = new ArrayList<>();
-        try (KeyValueIterator<Integer, ProductEvent> all = store.all()) {
-            while (all.hasNext()) {
-                result.add(all.next().value);
+            List<ProductEvent> result = new ArrayList<>();
+            try (KeyValueIterator<Integer, ProductEvent> all = store.all()) {
+                while (all.hasNext()) {
+                    result.add(all.next().value);
+                }
             }
-        }
 
-        return ResponseEntity.ok(result);
+            return ResponseEntity.ok(result);
+        } catch (org.apache.kafka.streams.errors.InvalidStateStoreException | IllegalStateException e) {
+            // Store not ready yet or streams in ERROR/NOT_RUNNING state
+            return ResponseEntity.status(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
