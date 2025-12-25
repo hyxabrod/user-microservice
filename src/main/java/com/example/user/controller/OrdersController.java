@@ -1,4 +1,4 @@
-package com.example.user.api;
+package com.example.user.controller;
 
 import java.util.Map;
 
@@ -23,8 +23,7 @@ public class OrdersController {
     @GetMapping
     public ResponseEntity<Map<String, String>> create(
             @RequestParam int userId,
-            @RequestParam int productId
-    ) {
+            @RequestParam int productId) {
         int requestId = userOrderService.createOrder(userId, productId);
         return ResponseEntity.ok(Map.of("requestId", Integer.toString(requestId)));
     }
