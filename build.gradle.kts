@@ -24,5 +24,5 @@ dependencies {
     
     runtimeOnly("org.postgresql:postgresql")
     
-    implementation("com.example:kafka-contracts:0.1.0")
+    implementation("com.example:kafka-contracts:0.2.0")
 }
